@@ -32,25 +32,35 @@ def generate_table():
 
     wb.save('./data/table1.xlsx')
 
-def write_data(last_id):
+def write_data(last_id, file_name='data.json'):
+    with open('./data/' + file_name, 'r', encoding='utf-8') as file:
+        all_data = json.load(file)
 
-    with open('./data/data.json', 'r', encoding='utf-8') as file:
-        data = json.load(file)
-        wb = load_workbook('./data/table1.xlsx')
+    if last_id == all_data['metadata']['id']:
+        return -1
 
-        curr_sheet = wb['Лист1']
+    data = all_data['data']
+    last_id += 1
 
-        i = 2
+    wb = load_workbook('./data/table1.xlsx')
+
+    curr_sheet = wb['Лист1']
+
+    i = 2
+
+    for k in range(0, len(data)):
         while curr_sheet.cell(row=i, column=1).value != None:
             i += 1
 
         for j in range(0, len(col_names)):
-            curr_sheet.cell(row=i, column=j+1).value = data[col_names[j]]
+            curr_sheet.cell(row=i, column=j+1).value = data[k][col_names[j]]
             curr_sheet.cell(row=i, column=j+1).font = Font(name='Calibri', size=12)
             curr_sheet.cell(row=i, column=j+1).alignment = Alignment(horizontal='center')
             curr_sheet.cell(row=i, column=j+1).border = thin_border
 
-        wb.save('./data/table1.xlsx')
+    wb.save('./data/table1.xlsx')
 
-generate_table()
-write_data(-1)
+# generate_table()
+# write_data(-1)
+# write_data(0)
+# write_data(1, 'data1.json')
