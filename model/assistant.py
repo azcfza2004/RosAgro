@@ -708,7 +708,46 @@ def create_assistant(model, tools=None):
         model, ttl_days=1, expiration_policy="since_last_active", **kwargs
     )
 
-with open("data/table.md", encoding="utf-8") as f:
+
+
+d = [
+    {
+        "File" : fn,
+        "Tokens" : get_token_count(fn),
+        "Chars" : get_file_len(fn),
+        # "Category" : fn.split("/")[1],
+    }
+    for fn in glob('data/*.md')
+    #if fn.count("/") == 2
+]
+
+df = pd.DataFrame(d)
+print(df.head())
+
+df["Uploaded"] = df["File"].apply(upload_file)
+
+print(df.head())
+
+op = sdk.search_indexes.create_deferred(
+    df["Uploaded"],
+    index_type=HybridSearchIndexType(
+        # chuncking_strategy=StaticIndexChunkingStrategy(
+        #     max_chunk_size_tokens=1000, chunk_overlap_tokens=100
+        # ),
+        combination_strategy=ReciprocalRankFusionIndexCombinationStrategy(),
+    ),
+)
+
+operation = sdk.search_indexes.create_deferred(
+        df["Uploaded"],
+        index_type=HybridSearchIndexType(
+        ),
+    )
+
+index = op.wait()
+index = operation.wait()
+
+with open("trash/table.md", encoding="utf-8") as f:
     table = f.readlines()
 fw = "".join(table)
 
@@ -734,51 +773,17 @@ for x in table[2:]:
 
 
 
-op = sdk.search_indexes.create_deferred(
-    uploaded_table,
-    index_type=HybridSearchIndexType(
-        combination_strategy=ReciprocalRankFusionIndexCombinationStrategy(),
-    ),
-)
 
-index = op.wait()
-
-# d = [
-#     {
-#         "File" : fn,
-#         "Tokens" : get_token_count(fn),
-#         "Chars" : get_file_len(fn),
-#         # "Category" : fn.split("/")[1],
-#     }
-#     for fn in glob('data/*.md')
-#     #if fn.count("/") == 2
-# ]
-#
-# df = pd.DataFrame(d)
-# print(df.head())
-
-# df["Uploaded"] = df["File"].apply(upload_file)
-
-# print(df.head())
+op = index.add_files_deferred(uploaded_table)
 
 # op = sdk.search_indexes.create_deferred(
-#     df["Uploaded"],
+#     uploaded_table,
 #     index_type=HybridSearchIndexType(
-#         # chuncking_strategy=StaticIndexChunkingStrategy(
-#         #     max_chunk_size_tokens=1000, chunk_overlap_tokens=100
-#         # ),
 #         combination_strategy=ReciprocalRankFusionIndexCombinationStrategy(),
 #     ),
 # )
 
-# operation = sdk.search_indexes.create_deferred(
-#         df["Uploaded"],
-#         index_type=HybridSearchIndexType(
-#         ),
-#     )
-
-# index = op.wait()
-# index = operation.wait()
+xfiles = op.wait()
 
 # op = index.add_files_deferred( df["Uploaded"])
 # xfiles = op.wait()
