@@ -32,14 +32,16 @@ def generate_table():
 
     wb.save('./data/table1.xlsx')
 
-def write_data(last_id, file_name='data.json'):
+def write_data(last_id, file_name='data.jsonl'):
     with open('./data/' + file_name, 'r', encoding='utf-8') as file:
-        all_data = json.load(file)
+        # all_data = json.load(file)
+        data = [json.loads(line) for line in file if line.strip()]
 
-    if last_id == all_data['metadata']['id']:
-        return -1
+    # if last_id == all_data['metadata']['id']:
+    #     return -1
 
-    data = all_data['data']
+    # data = all_data['data']
+
     last_id += 1
 
     wb = load_workbook('./data/table1.xlsx')
@@ -60,7 +62,7 @@ def write_data(last_id, file_name='data.json'):
 
     wb.save('./data/table1.xlsx')
 
-# generate_table()
-# write_data(-1)
-# write_data(0)
+generate_table()
+write_data(-1)
+write_data(0)
 # write_data(1, 'data1.json')
