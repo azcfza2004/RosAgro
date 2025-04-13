@@ -55,9 +55,9 @@ while not(empty(curr_sheet, i)):
         else:
             text = str(curr_sheet.cell(row=i, column=j).value)
 
-        answer += col_names[j - 2] + ": " + text + '\n'
+        answer += col_names[j - 2] + ": " + text + ' '
 
-    tmp = "Дата:   \nПодразделение:   \nОперация:   \nКультура:   \nЗа день, га:   \nС начала операции, га:   \nВал за день, ц:   \nВал с начала, ц:   \n"
+    tmp = "Дата:    Подразделение:    Операция:    Культура:    За день, га:    С начала операции, га:    Вал за день, ц:    Вал с начала, ц:    "
     # print(tmp)
     # print(answer)
     if answer != tmp:
