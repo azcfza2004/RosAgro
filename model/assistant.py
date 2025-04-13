@@ -17,7 +17,7 @@ sdk = YCloudML(folder_id="b1g6rjppcrrhq56lsqr0", auth="AQVNxTuU2_Efl4APdsHSsNBwM
 
 
 # 0-ая модель
-model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/yandexgpt-lite/rc@tamrkppb6gudqt87drov0"))
+# model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/yandexgpt-lite/rc@tamrkppb6gudqt87drov0"))
 # Tokens: 1262, 4.2028526148969885 chars/tokens
 # Пример 1
 #
@@ -583,7 +583,7 @@ model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/yandexgpt-lite/rc@ta
 
 
 
-
+model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/yandexgpt-lite/rc@tamr5b4543te6jjklkcs3"))
 model = model.configure(temperature=0.5, max_tokens=3000)
 
 message_1 = "Проанализируй сообщение и распредели по группам\n Вот пример сообщения: Север \nОтд7 пах с св 41/501\nОтд20 20/281 по пу 61/793\nОтд 3 пах подс.60/231\nПо пу 231\n\nДиск к. Сил отд 7. 32/352\nПу- 484\nДиск под Оз п езубов 20/281\nДиск под с. Св отд 10 83/203 пу-1065га"
@@ -747,7 +747,7 @@ operation = sdk.search_indexes.create_deferred(
 index = op.wait()
 index = operation.wait()
 
-with open("trash/table.md", encoding="utf-8") as f:
+with open("trash/operations.md", encoding="utf-8") as f:
     table = f.readlines()
 fw = "".join(table)
 
@@ -756,7 +756,36 @@ print(f"Tokens: {tokens}, {len(fw)/tokens} chars/tokens")
 
 header = table[:2]
 
-chunck_size = 600 * 4
+chunck_size = 600 * 3
+
+s = header.copy()
+uploaded_table = []
+for x in table[2:]:
+    s.append(x)
+    if len("".join(s)) > chunck_size:
+        id = sdk.files.upload_bytes(
+            "".join(s).encode(), ttl_days=5, expiration_policy="static",
+            mime_type="text/markdown",
+        )
+
+        uploaded_table.append(id)
+        s = header.copy()
+
+
+
+
+op = index.add_files_deferred(uploaded_table)
+
+with open("trash/culture.md", encoding="utf-8") as f:
+    table = f.readlines()
+fw = "".join(table)
+
+tokens = len(model.tokenize(fw))
+print(f"Tokens: {tokens}, {len(fw)/tokens} chars/tokens")
+
+header = table[:2]
+
+chunck_size = 600 * 3
 
 s = header.copy()
 uploaded_table = []
