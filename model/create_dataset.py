@@ -1,3 +1,4 @@
+from colorama import AnsiToWin32
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import json
@@ -47,16 +48,25 @@ while not(empty(curr_sheet, i)):
 
 
 
-
+    answer = ''
     for j in range(2, 10):
         if curr_sheet.cell(row=i, column=j).value == None:
             text = "  "
         else:
             text = str(curr_sheet.cell(row=i, column=j).value)
 
-        txt_answer += col_names[j - 2] + ": " + text + '\n'
+        answer += col_names[j - 2] + ": " + text + '\n'
 
-    txt_answer += '\n'
+    tmp = "Дата:   \nПодразделение:   \nОперация:   \nКультура:   \nЗа день, га:   \nС начала операции, га:   \nВал за день, ц:   \nВал с начала, ц:   \n"
+    # print(tmp)
+    # print(answer)
+    if answer != tmp:
+        txt_answer += answer + '\n'
+        #print(tmp, answer)
+
+        # print(answer)
+        # print(tmp)
+
     i += 1
 
 with open("./data/output.jsonl", "w", encoding="utf-8") as f:
