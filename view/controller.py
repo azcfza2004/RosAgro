@@ -6,13 +6,13 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from docx import Document
 from view import keyboards as kb
-from pathlib import Path
+
 
 router = Router()
 ChatID = -4612403783
 #Инциализпция работы с файлом history
 doc = Document()
-number_message = 0
+number_message = 1
 class Href(StatesGroup): # состояния
     start = State()
     generate = State()
@@ -41,14 +41,16 @@ async def handle_message(message: types.Message, state: FSMContext):
 # Сбор информации с чата построчно
 @router.message(Href.waiting_for_message)
 async def handle_message(message: types.Message, state: FSMContext):
+
     global number_message
     user_name =  message.from_user.full_name
-    message_id = message.message_id
-    date = str(message.date)[:-6]
-    date_for_file = date.replace(' ','').replace(':','')
+    date = message.date
     text = message.text
-    doc.add_paragraph(f" Имя:{user_name}\n{text}\nДата:{date}\nID сообщения:{message_id}")
-    doc.save(r'model/data/'+user_name+'_'+str(number_message)+'_'+date_for_file+'.docx')
+
+    doc.add_paragraph(f"{text}")
+    doc.save(r'model/data/'+user_name+'_'+str(number_message)+'_'+str(date.minute)
+             +str(date.hour+3)+str(date.day)+str(date.month)+str(date.year)+'.docx')
+
     p = doc.paragraphs[0]
     p_e = p._element
     p_e.getparent().remove(p_e)
