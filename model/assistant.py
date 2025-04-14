@@ -1,6 +1,7 @@
 from docx import Document
 import json
 import os
+import re
 
 import printx
 from yandex_cloud_ml_sdk import YCloudML
@@ -37,6 +38,7 @@ sdk = YCloudML(folder_id="b1g6rjppcrrhq56lsqr0", auth="AQVNxTuU2_Efl4APdsHSsNBwM
 
 #LLama
 model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrv6si2nqsg5ea5srge"))
+#model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamr074gv096dpj8fpg52"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
@@ -91,14 +93,22 @@ def parse_messages_files(data_dir="messages"):
 
     return files
 
+def clear_file(filename):
+    with open(filename, 'w') as file:
+        file.write('')
 
-def process_data(data_str):
-
+def process_data(data_str, message):
+    key_names = ["Дата", "Подразделение", "Операция", "Культура", "За день, га", "С начала операции, га",
+                 "Вал за день, ц", "Вал с начала, ц"]
     # Создаем директорию, если ее нет
+
     os.makedirs('processed_data', exist_ok=True)
 
-    with open('processed_data/data.jsonl', 'w', encoding='utf-8') as jsonl_file:
+    with open('processed_data/data.jsonl', 'a+', encoding='utf-8') as jsonl_file:
         data_lines = data_str.strip().split("\n")
+        data_dict = {}
+        data_dict["message"] = message
+        jsonl_file.write(json.dumps(data_dict, ensure_ascii=False) + '\n')
         data_dict = {}
 
         for line in data_lines:
@@ -112,7 +122,8 @@ def process_data(data_str):
                     parts = line.split(": ", 1)
                     key = parts[0].strip()
                     value = parts[1].strip() if len(parts) > 1 and parts[1].strip() else ""
-                    data_dict[key] = value
+                    if key in key_names:
+                        data_dict[key] = value
                 elif line.endswith(":"):
                     data_dict[line[:-1].strip()] = ""
                 else:
@@ -128,6 +139,40 @@ def process_data(data_str):
     #print(f"Обработка завершена. Данные сохранены в processed_data/data.jsonl")
 
 
+def process_data_v2(data_str, message):
+    key_names = ["Дата", "Подразделение", "Операция", "Культура", "За день, га", "С начала операции, га",
+                 "Вал за день, ц", "Вал с начала, ц"]
+
+    # Создаем директорию, если ее нет
+    os.makedirs('processed_data', exist_ok=True)
+
+    with open('processed_data/data.jsonl', 'a+', encoding='utf-8') as jsonl_file:
+        data_lines = data_str.strip().split("\n")
+        data_dict = {}
+        data_dict["message"] = message
+
+        # Сохраняем сообщение в файл
+        jsonl_file.write(json.dumps(data_dict, ensure_ascii=False) + '\n')
+
+        for line in data_lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # Разделяем строку по пробелам и двоеточиям
+            pairs = line.split(" ")
+            for i in range(0, len(pairs), 2):
+                if i + 1 < len(pairs):  # Проверяем, чтобы не выйти за пределы списка
+                    key = pairs[i].rstrip(':')  # Удаляем двоеточие в конце ключа
+                    value = pairs[i + 1]
+                    data_dict[key] = value
+
+            # Записываем данные в файл, если они есть
+            if data_dict:
+                jsonl_file.write(json.dumps(data_dict, ensure_ascii=False) + '\n')
+                data_dict = {}  # Очищаем словарь для следующей строки
+
+    print(f"Обработка завершена. Данные сохранены в processed_data/data.jsonl")
 
 
 # Основной скрипт
@@ -138,7 +183,7 @@ if __name__ == "__main__":
 
     assistant.update(
         instruction="""
-        Ты — помощник агронома, который должен распределить информацию из собщения по группам: 
+        Ты — помощник агронома, который должен распределить информацию из собщения по группам, каждая группа выводится с новой строки: 
         Дата, 
         Подразделение, 
         Операция, 
@@ -156,18 +201,33 @@ if __name__ == "__main__":
     #print(len(files))
     print("\nПробная попытка ассистента...")
     # Пример взаимодействия
-    thread = create_thread()
     messages = [message_1, message_2, message_3, message_4, message_5, message_6, message_7]
-    for i in range(len(messages)):
-          print(f'Пример {i + 1}\n')
-          thread.write(messages[i])
+    clear_file('processed_data/data.jsonl')
+
+
+    files_data = parse_messages_files()
+    #for i in range(len(files_data)):
+    for i in range(len(files_data)):
+          print(f'Пример {files_data[i]["id"]}  Выполнено: {i + 1}\n')
+          thread = create_thread()
+          thread.write(files_data[i]["content"])
           response = assistant.run(thread).wait()
           print(response.text)
+          process_data(response.text, files_data[i]["content"])
+          thread.delete()
+
+    # for i in range(len(messages)):
+    #       print(f'Пример {i + 1}\n')
+    #       thread.write(messages[i])
+    #       response = assistant.run(thread).wait()
+    #       print(response.text)
+    #       process_data(response.text, messages[i][71:])
+
+
 
     # thread.write(messages[0])
     # response = assistant.run(thread).wait()
     # print(response.text)
-    # process_data(response.text)
+    # process_data(response.text, messages[0][71:])
 
-    thread.delete()
     assistant.delete()
