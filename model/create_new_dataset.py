@@ -11,7 +11,7 @@ def empty(curr_sheet, curr_row):
 
     return True
 
-wb = load_workbook('trash/Исправленные_записи.xlsx')
+wb = load_workbook('data/Исправленные_записи_+добавленные.xlsx')
 
 curr_sheet = wb['Лист1']
 
