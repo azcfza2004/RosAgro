@@ -30,10 +30,10 @@ def generate_table():
         else:
             curr_sheet.column_dimensions[chr(i + 65)].width = 25
 
-    wb.save('./data/table1.xlsx')
+    wb.save('model/data/table1.xlsx')
 
-def write_data(last_id, file_name='data.jsonl'):
-    with open('./data/' + file_name, 'r', encoding='utf-8') as file:
+def write_data(file_name='model/processed_data/data.jsonl'):
+    with open(file_name, 'r', encoding='utf-8') as file:
         # all_data = json.load(file)
         data = [json.loads(line) for line in file if line.strip()]
 
@@ -42,16 +42,14 @@ def write_data(last_id, file_name='data.jsonl'):
 
     # data = all_data['data']
 
-    last_id += 1
-
-    wb = load_workbook('./data/table1.xlsx')
+    wb = load_workbook('model/data/table1.xlsx')
 
     curr_sheet = wb['Лист1']
 
     i = 2
 
     for k in range(0, len(data)):
-        while curr_sheet.cell(row=i, column=1).value != None:
+        while curr_sheet.cell(row=i, column=2).value != None:
             i += 1
 
         for j in range(0, len(col_names)):
@@ -60,8 +58,8 @@ def write_data(last_id, file_name='data.jsonl'):
             curr_sheet.cell(row=i, column=j+1).alignment = Alignment(horizontal='center')
             curr_sheet.cell(row=i, column=j+1).border = thin_border
 
-    wb.save('./data/table1.xlsx')
+    wb.save('model/data/table1.xlsx')
 
-generate_table()
-write_data(-1)
-write_data(0)
+# generate_table()
+# write_data(-1)
+# write_data(0)

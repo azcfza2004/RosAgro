@@ -5,6 +5,9 @@ from datetime import datetime
 from aiogram import types, F, Router
 from docx import Document
 
+from model.assistant import catch_messages, clear_file
+from model.excel import write_data, generate_table
+
 router = Router()
 
 # Настройка логирования
@@ -24,12 +27,13 @@ async def handle_message(message: types.Message):
 
         # Получаем информацию о пользователе и сообщении
         user_name = message.from_user.full_name
-        date = message.date + datetime.timedelta(hours=3)
+        #date = message.date + datetime.timedelta(hours=3)
         text = message.text
 
         # Формируем имя файла (имяпользователя_номерсообщения_времядата.docx)
-        timestamp_str = date.strftime("%M%H%d%m%Y")
-        filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
+        #timestamp_str = date.strftime("%M%H%d%m%Y")
+        #filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
+        filename = f"{user_name}_{number_docx}_{1}.docx"
         filepath = os.path.join("model/data", filename)
 
         # Создаем новый документ .docx
@@ -39,6 +43,15 @@ async def handle_message(message: types.Message):
         number_docx += 1
 
         logging.info(f"Сообщение от {user_name} сохранено в {filepath}")
+
+        logging.info(f"Возвращенный текст: {text}")  # Пример использования возвращенного значения
+        clear_file('model/processed_data/data.jsonl')
+        catch_messages(text)
+
+        if (os.path.isfile('model/data/table1.xlsx') == False):
+            generate_table()
+        write_data()
+
 
     except Exception as e:
         logging.error(f"Ошибка при обработке сообщения: {e}")
