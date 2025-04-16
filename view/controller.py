@@ -44,7 +44,7 @@ async def handle_message(message: types.Message):
         logging.error(f"Ошибка при обработке сообщения: {e}")
         await message.reply(f"Произошла ошибка при сохранении сообщения: {e}")  # Отправляем сообщение об ошибке пользователю
 
-# Обработчик всех текстовых сообщений
+
 @router.message(F.text)
 async def process_message(message: types.Message, ):
     """Обрабатывает все текстовые сообщения, сохраняя их в файл."""
