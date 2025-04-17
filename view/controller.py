@@ -7,7 +7,7 @@ from aiogram import types, F, Router
 from aiogram.types import FSInputFile
 from docx import Document
 from model.assistant import catch_messages, clear_file
-from model.excel import write_data, generate_table
+from model.excel import write_data, generate_table, check_table
 
 
 router = Router()
@@ -29,9 +29,12 @@ async def send_reminder(message: types.Message, chat_id: int):
         :param message: Объект сообщения от пользователя (aiogram.types.message).
     """
     try:
+        global user_data
+
         document = FSInputFile("model/data/table1.xlsx")
-        await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
+        await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
+        # user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
     except Exception as e:
         logging.error(f"Ошибка при отправке таблицы пользователю {chat_id}: {e}")
         await message.answer("Ошибка при отправке сгенерированного отчёта")
@@ -81,6 +84,8 @@ async def handle_message(message: types.Message, date: float):
             generate_table()
         #Дозапись данных в таблицу
         write_data()
+        #Проверка возможных ошибок в таблице
+        check_table()
 
 
     except Exception as e:
@@ -95,6 +100,8 @@ async def process_message(message: types.Message):
         :param message: Объект сообщения от пользователя (aiogram.types.message).
     """
     try:
+        global user_data
+
         chat_id = message.chat.id
         date = time.time()
 
