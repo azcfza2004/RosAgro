@@ -2,19 +2,15 @@ import asyncio
 import os
 import logging
 import time
-
-from datetime import timedelta, datetime
+from datetime import datetime
 from aiogram import types, F, Router
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import FSInputFile
 from docx import Document
 from model.assistant import catch_messages, clear_file
 from model.excel import write_data, generate_table
 
-router = Router()
 
-class State_time(StatesGroup): # состояния
-    state_time = State()
+router = Router()
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,19 +20,21 @@ user_data = {}
 
 number_docx = 1
 
-async def send_reminder(message: types.Message, user_id: int):
+async def send_reminder(message: types.Message, chat_id: int):
     """
     Отправляет напоминание пользователю.
 
     Args:
-        :param user_id: ID определённого чата
+        :param chat_id: ID определённого чата
         :param message: Объект сообщения от пользователя (aiogram.types.message).
     """
     try:
-        await message.answer("Крокодило Бомбордило.")
-        user_data[user_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
+        document = FSInputFile("model/data/table1.xlsx")
+        await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
+        user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
     except Exception as e:
-        logging.error(f"Ошибка при отправке напоминания пользователю {user_id}: {e}")
+        logging.error(f"Ошибка при отправке таблицы пользователю {chat_id}: {e}")
+        await message.answer("Ошибка при отправке сгенерированного отчёта")
 
 async def handle_message(message: types.Message, date: float):
     """
@@ -88,30 +86,43 @@ async def handle_message(message: types.Message, date: float):
 
     except Exception as e:
         logging.error(f"Ошибка при обработке сообщения: {e}")
-        await message.reply(f"Произошла ошибка при сохранении сообщения: {e}")
+        await message.reply(f"Произошла ошибка при генерации отчёта")
 
+
+async def process_message(message: types.Message):
+    """
+    Обрабатывает все текстовые сообщения и проверяет время последнего сообщения
+        Args:
+        :param message: Объект сообщения от пользователя (aiogram.types.message).
+    """
+    try:
+        chat_id = message.chat.id
+        date = time.time()
+
+        await handle_message(message, date)
+
+        # Добавляем ID чата в словарь, если чат новый
+        if chat_id not in user_data:
+            user_data[chat_id] = {
+                'last_message_time': date,
+                'reminder_sent': False
+            }
+        else:
+            user_data[chat_id]['last_message_time'] = date
+            user_data[chat_id]['reminder_sent'] = False
+
+
+        await asyncio.sleep(5)  # Ждем 2 минуты
+        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 5 and
+                not user_data[chat_id]['reminder_sent']):
+            await send_reminder(message, chat_id)
+    except Exception as e:
+        logging.error(
+            f"Ошибка при обработке сообщения от пользователя {message.from_user.id} в чате {message.chat.id}: {e}",
+            exc_info=True)
+        await  message.answer("Ошибка обработки сообщения")
 
 @router.message(F.text)
-async def process_message(message: types.Message, state: FSMContext):
-    """Обрабатывает все текстовые сообщения, сохраняя их в файл."""
-    chat_id = message.chat.id
-    date = time.time()
-
-    await handle_message(message, date)
-
-    # Добавляем ID чата в словарь, если чат новый
-    if chat_id not in user_data:
-        user_data[chat_id] = {
-            'last_message_time': date,
-            'reminder_sent': False
-        }
-    else:
-        user_data[chat_id]['last_message_time'] = date
-        user_data[chat_id]['reminder_sent'] = False
-
-
-    await asyncio.sleep(30)  # Ждем 5 секунд
-    if (time.time() - int(user_data[chat_id]['last_message_time']) >= 19 and
-            not user_data[chat_id]['reminder_sent']):
-        await send_reminder(message, chat_id)
+async def any_message_handler(message: types.Message):
+    await process_message(message)
 

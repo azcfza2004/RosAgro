@@ -1,8 +1,7 @@
-from docx import Document
 import json
 import os
 
-from setuptools import logging
+import logging
 from yandex_cloud_ml_sdk import YCloudML
 
 # Инициализация SDK Yandex Cloud ML
@@ -21,19 +20,19 @@ def create_thread():
     """
     return sdk.threads.create(ttl_days=1, expiration_policy="static")
 
-def create_assistant(model, tools=None):
+def create_assistant(lmodel, tools=None):
     """
         Создает ассистента с указанной моделью и инструментами
 
         Args:
-            :param model: Модель нейросети
+            :param lmodel: Модель нейросети
             :param tools: Инструменты ассистента
     """
     kwargs = {}
     if tools and len(tools) > 0:
         kwargs = {"tools": tools}
     return sdk.assistants.create(
-        model,
+        lmodel,
         ttl_days=1,
         expiration_policy="since_last_active",
         **kwargs
@@ -123,7 +122,7 @@ def process_data(response, date):
 
 def catch_messages(text, date):
     """
-        Основной пайплайн обработки сообщения
+        Основной пайп лайн обработки сообщения
 
         Args:
             :param text: Полный текст сообщения от пользователя
