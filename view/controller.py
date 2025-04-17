@@ -39,6 +39,10 @@ async def send_reminder(message: types.Message, chat_id: int):
 
         document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
+        # await asyncio.wait_for(
+        #     message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт"),
+        #     timeout=30.0  # 30 секунд на отправку
+        # )
         await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
         # user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
     except Exception as e:
@@ -128,8 +132,8 @@ async def process_message(message: types.Message):
             user_data[chat_id]['reminder_sent'] = False
 
 
-        await asyncio.sleep(5)  # Ждем 2 минуты
-        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 5 and
+        await asyncio.sleep(40)  # Ждем 2 минуты
+        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 40 and
                 not user_data[chat_id]['reminder_sent']):
             await send_reminder(message, chat_id)
     except Exception as e:

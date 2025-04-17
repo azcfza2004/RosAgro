@@ -11,12 +11,16 @@ sdk = YCloudML(
 )
 
 # Инициализация модели LLAMA Lite и настройка генерации
-model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
+# model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
+model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrd42msh18e0103q4mj"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
     """
         Создает новый тред для обработки запроса
+
+        Returns:
+            Созданный объект треда с TTL=1 день и статической политикой экспирации.
     """
     return sdk.threads.create(ttl_days=1, expiration_policy="static")
 
@@ -27,6 +31,9 @@ def create_assistant(lmodel, tools=None):
         Args:
             :param lmodel: Модель нейросети
             :param tools: Инструменты ассистента
+
+        Returns:
+            Assistant: Объект созданного ассистента.
     """
     kwargs = {}
     if tools and len(tools) > 0:

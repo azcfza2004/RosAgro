@@ -25,6 +25,9 @@ def empty(curr_sheet, curr_row):
         Args:
             :param curr_sheet: Текущий лист
             :param curr_row: Текущая строка
+
+        Returns:
+            bool: True, если строка пустая, иначе False.
     """
     for i in range(0, 1):
         for j in range(1, 10):
