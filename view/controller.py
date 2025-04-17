@@ -55,7 +55,11 @@ async def handle_message(message: types.Message, date: float):
 
         # Формируем имя файла (имяпользователя_номерсообщения_времядата.docx)
         timestamp_str = datetime.fromtimestamp(date).strftime("%M%H%d%m%Y")
-        filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
+
+        #Формирование корректной даты
+        correct_date = timestamp_str[8:13] + "-" + timestamp_str[6:8] + "-" + timestamp_str[4:6] + " " + timestamp_str[2:4] + "_" + timestamp_str[0:2] + "_00"
+
+        filename = f"{user_name}_{number_docx}_{correct_date}.docx"
         filepath = os.path.join("model/data", filename)
 
         # Создаем новый документ .docx
@@ -67,11 +71,18 @@ async def handle_message(message: types.Message, date: float):
         logging.info(f"Сообщение от {user_name} сохранено в {filepath}")
 
         logging.info(f"Возвращенный текст: {text}")
-        clear_file('model/processed_data/data.jsonl')
-        catch_messages(text)
 
+        #Очищаем файл для записи очередной порции данных
+        clear_file('model/processed_data/data.jsonl')
+
+        correct_date = correct_date.replace("_", ":")
+        #Вызов обработки полученного сообщения
+        catch_messages(text, correct_date)
+
+        #В случае если таблицы для записи нет - создать ее
         if not os.path.isfile('model/data/table1.xlsx'):
             generate_table()
+        #Дозапись данных в таблицу
         write_data()
 
 
@@ -99,7 +110,7 @@ async def process_message(message: types.Message, state: FSMContext):
         user_data[chat_id]['reminder_sent'] = False
 
 
-    await asyncio.sleep(20)  # Ждем 5 секунд
+    await asyncio.sleep(30)  # Ждем 5 секунд
     if (time.time() - int(user_data[chat_id]['last_message_time']) >= 19 and
             not user_data[chat_id]['reminder_sent']):
         await send_reminder(message, chat_id)
