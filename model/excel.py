@@ -1,6 +1,6 @@
 from openpyxl import Workbook
 from openpyxl import load_workbook
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, numbers
 from openpyxl.styles import Border, Side
 import json
 import logging
@@ -59,6 +59,8 @@ def generate_table(table_name='model/data/table1.xlsx'):
             curr_sheet.cell(row=2, column=i + 1).fill = PatternFill(patternType='solid', start_color='C2D69B')
             curr_sheet.cell(row=2, column=i + 1).alignment = Alignment(horizontal='center')
             curr_sheet.cell(row=2, column=i + 1).border = thin_border
+            if col_names[i] == 'Дата':
+                curr_sheet.cell(row=2, column=i + 1).number_format = 'YYYY-MM-DD'
 
             # Настраиваем ширину столбцов
             if col_names[i] == 'Операция':
