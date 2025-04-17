@@ -20,11 +20,11 @@ thin_border = Border(
 
 def empty(curr_sheet, curr_row):
     """
-            Проверяет, пустая ли строка в таблице.
+        Проверяет, пустая ли строка в таблице.
 
-            Args:
-                :param curr_sheet: Текущий лист
-                :param curr_row: Текущая строка
+        Args:
+            :param curr_sheet: Текущий лист
+            :param curr_row: Текущая строка
     """
     for i in range(0, 1):
         for j in range(1, 10):
@@ -35,10 +35,10 @@ def empty(curr_sheet, curr_row):
 
 def generate_table(table_name='model/data/table1.xlsx'):
     """
-            Создает новую таблицу Excel с заголовками.
+        Создает новую таблицу Excel с заголовками.
 
-            Args:
-                :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
+        Args:
+            :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
     """
     try:
         wb = Workbook()
@@ -76,11 +76,11 @@ def generate_table(table_name='model/data/table1.xlsx'):
 
 def write_data(file_name='model/processed_data/data.jsonl', table_name='model/data/table1.xlsx'):
     """
-            Записывает данные из JSONL-файла в таблицу Excel.
+        Записывает данные из JSONL-файла в таблицу Excel.
 
-            Args:
-                :param file_name: Название JSONL-файла по умолачанию является тем, которое задается в assistant.py
-                :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
+        Args:
+            :param file_name: Название JSONL-файла по умолачанию является тем, которое задается в assistant.py
+            :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
     """
     try:
         with open(file_name, 'r', encoding='utf-8') as file:
@@ -98,10 +98,15 @@ def write_data(file_name='model/processed_data/data.jsonl', table_name='model/da
 
             # Записываем данные в ячейки
             for j in range(0, len(col_names)):
-                curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]]
+                # Приводим дату в стандартный формат
+                if col_names[j] == 'Дата':
+                    curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]].split(' ')[0]
+                else:
+                    curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]]
                 curr_sheet.cell(row=i, column=j + 1).font = Font(name='Calibri', size=12)
                 curr_sheet.cell(row=i, column=j + 1).alignment = Alignment(horizontal='center')
                 curr_sheet.cell(row=i, column=j + 1).border = thin_border
+
 
         wb.save(table_name)
     except FileNotFoundError:
@@ -117,11 +122,11 @@ def write_data(file_name='model/processed_data/data.jsonl', table_name='model/da
 
 def read_inf(curr_sheet, d):
     """
-            Читает данные из справочного листа и добавляет их в список d.
+        Читает данные из справочного листа и добавляет их в список d.
 
-            Args:
-                :param sheet_name: Название листа
-                :param d: Словарь, куда сохраняются данные
+        Args:
+            :param sheet_name: Название листа
+            :param d: Словарь, куда сохраняются данные
     """
     try:
         r = 4  # Начинаем с 4 строки
@@ -138,10 +143,10 @@ def read_inf(curr_sheet, d):
 
 def check_table(table_name='model/data/table1.xlsx'):
     """
-            Проверяет таблицу на соответствие справочным данным.
+        Проверяет таблицу на соответствие справочным данным.
 
-            Args:
-                :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
+        Args:
+            :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
     """
     try:
         # Загружаем справочные данные
@@ -152,9 +157,9 @@ def check_table(table_name='model/data/table1.xlsx'):
         culture = []
         operation = []
 
-        read_inf(wb_ref, wb_ref[sheet_names_ref[0]], subdivision)  # Подразделения
-        read_inf(wb_ref, wb_ref[sheet_names_ref[1]], operation)  # Операции
-        read_inf(wb_ref, wb_ref[sheet_names_ref[2]], culture)  # Культуры
+        read_inf(wb_ref[sheet_names_ref[0]], subdivision)  # Подразделения
+        read_inf(wb_ref[sheet_names_ref[1]], operation)  # Операции
+        read_inf(wb_ref[sheet_names_ref[2]], culture)  # Культуры
 
         # Загружаем проверяемую таблицу
         wb = load_workbook(table_name)
