@@ -53,12 +53,11 @@ async def handle_message(message: types.Message, date: float):
 
         # Формируем имя файла (имяпользователя_номерсообщения_времядата.docx)
         timestamp_str = datetime.fromtimestamp(date).strftime("%M%H%d%m%Y")
+        filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
+        filepath = os.path.join("model/data", filename)
 
         #Формирование корректной даты
         correct_date = timestamp_str[8:13] + "-" + timestamp_str[6:8] + "-" + timestamp_str[4:6] + " " + timestamp_str[2:4] + "_" + timestamp_str[0:2] + "_00"
-
-        filename = f"{user_name}_{number_docx}_{correct_date}.docx"
-        filepath = os.path.join("model/data", filename)
 
         # Создаем новый документ .docx
         doc = Document()
