@@ -102,7 +102,12 @@ def write_data(file_name='model/processed_data/data.jsonl', table_name='model/da
                 if col_names[j] == 'Дата':
                     curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]].split(' ')[0]
                 else:
-                    curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]]
+                    # Приводим число в стандартный формат
+                    if not (col_names[j] in ['Дата', 'Подразделение', 'Операция', 'Культура']) and  data[k][col_names[j]] != '':
+                        curr_sheet.cell(row=i, column=j + 1).number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
+                        curr_sheet.cell(row=i, column=j + 1).value = int(data[k][col_names[j]])
+                    else:
+                        curr_sheet.cell(row=i, column=j + 1).value = data[k][col_names[j]]
                 curr_sheet.cell(row=i, column=j + 1).font = Font(name='Calibri', size=12)
                 curr_sheet.cell(row=i, column=j + 1).alignment = Alignment(horizontal='center')
                 curr_sheet.cell(row=i, column=j + 1).border = thin_border

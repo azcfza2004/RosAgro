@@ -1,5 +1,6 @@
 import asyncio
 import os
+import glob
 import logging
 import time
 from datetime import datetime
@@ -31,7 +32,12 @@ async def send_reminder(message: types.Message, chat_id: int):
     try:
         global user_data
 
-        document = FSInputFile("model/data/table1.xlsx")
+        # Поиск последнего сохраненного файла
+        fallback_pattern = f"model/data/*_Лонг-айленд.xlsx"
+        matching_files = sorted(glob.glob(fallback_pattern), reverse=True)
+        file_name = matching_files[0] if matching_files else None
+
+        document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
         await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
         # user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
@@ -79,13 +85,17 @@ async def handle_message(message: types.Message, date: float):
         #Вызов обработки полученного сообщения
         catch_messages(text, correct_date)
 
+        # Формируем имя файла (ЧасДеньМесяцГод_НазваниеКоманды.xlsx) ???
+        timestamp_str = datetime.fromtimestamp(date).strftime("%H%d%m%Y")
+        filename = f"{timestamp_str}_Лонг-айленд.xlsx"
+
         #В случае если таблицы для записи нет - создать ее
-        if not os.path.isfile('model/data/table1.xlsx'):
-            generate_table()
+        if not os.path.isfile(f'model/data/{filename}'):
+            generate_table(f'model/data/{filename}')
         #Дозапись данных в таблицу
-        write_data()
+        write_data(table_name=f'model/data/{filename}')
         #Проверка возможных ошибок в таблице
-        check_table()
+        check_table(f'model/data/{filename}')
 
 
     except Exception as e:
