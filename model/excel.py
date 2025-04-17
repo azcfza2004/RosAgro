@@ -189,6 +189,16 @@ def check_table(table_name='model/data/table1.xlsx'):
             if curr_sheet.cell(row=r, column=4).value not in culture:
                 curr_sheet.cell(row=r, column=4).fill = PatternFill(patternType='solid', start_color='00FFFF00')
 
+            # Убираем неправильные данные
+            if curr_sheet.cell(row=r, column=7).value != None and curr_sheet.cell(row=r,
+                                                                                    column=3).value != 'Уборка':
+                curr_sheet.cell(row=r, column=7).value = None
+
+            # Убираем неправильные данные
+            if curr_sheet.cell(row=r, column=78).value != None and curr_sheet.cell(row=r,
+                                                                                   column=3).value != 'Уборка':
+                curr_sheet.cell(row=r, column=7).value = None
+
             r += 1
 
         wb.save(table_name)

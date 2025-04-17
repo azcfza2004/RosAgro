@@ -12,7 +12,7 @@ sdk = YCloudML(
 
 # Инициализация модели LLAMA Lite и настройка генерации
 # model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
-model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrd42msh18e0103q4mj"))
+model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrchclud309ekp64tbb"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
@@ -126,6 +126,43 @@ def process_data(response, date):
     except Exception as e:
         logging.error(f"Ошибка при открытии или записи в файл: Ошибка: {e}")
 
+def func_tests_messages(text):
+    """
+        Пайп лайн для обработки сообщений функциональных тестов
+
+        Args:
+            :param text: Полный текст сообщения
+
+        Returns:
+            response: Ответ нейросети
+    """
+    assistant = create_assistant(model)
+    assistant.update(
+        instruction=
+        """
+        Ты — помощник агронома, который должен распределить информацию из собщения по группам.
+        Каждая группа обязательно выводится с новой строки:
+        Дата,
+        Подразделение,
+        Операция,
+        Культура,
+        За день га,
+        С начала операции га,
+        Вал за день ц,
+        Вал с начала ц
+        """
+    )
+
+    # Обработка запроса
+    thread = create_thread()
+    thread.write(text)
+
+    response = assistant.run(thread).wait()
+    if not response.text:
+        raise RuntimeError("Пустой ответ от модели")
+
+    return response.text
+
 
 def catch_messages(text, date):
     """
@@ -166,7 +203,7 @@ def catch_messages(text, date):
         response = assistant.run(thread).wait()
         if not response.text:
             raise RuntimeError("Пустой ответ от модели")
-
+        print(response.text)
         process_data(response.text, date)
 
     except Exception as e:

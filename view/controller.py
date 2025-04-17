@@ -69,8 +69,16 @@ async def handle_message(message: types.Message, date: float):
         filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
         filepath = os.path.join("model/data", filename)
 
-        #Формирование корректной даты
-        correct_date = timestamp_str[8:13] + "-" + timestamp_str[6:8] + "-" + timestamp_str[4:6] + " " + timestamp_str[2:4] + "_" + timestamp_str[0:2] + "_00"
+
+        # Разбираем строку обратно в datetime
+        parsed_date = datetime.strptime(timestamp_str, "%M%H%d%m%Y")
+        #
+        # # Теперь можно получить нормальную дату в любом формате
+        correct_date = parsed_date.strftime("%Y-%m-%d %H:%M")
+        print(correct_date)
+        #print(normal_date_str).2023 15:30"
+        #формирование кореектной даты
+        #correct_date = timestamp_str[8:13] + "-" + timestamp_str[6:8] + "-" + timestamp_str[4:6] + " " + timestamp_str[2:4] + "_" + timestamp_str[0:2] + "_00"
 
         # Создаем новый документ .docx
         doc = Document()
@@ -132,8 +140,8 @@ async def process_message(message: types.Message):
             user_data[chat_id]['reminder_sent'] = False
 
 
-        await asyncio.sleep(40)  # Ждем 2 минуты
-        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 40 and
+        await asyncio.sleep(120)  # Ждем 2 минуты
+        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
                 not user_data[chat_id]['reminder_sent']):
             await send_reminder(message, chat_id)
     except Exception as e:
