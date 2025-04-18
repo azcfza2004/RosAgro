@@ -5,6 +5,8 @@ import logging
 import time
 import re
 from datetime import datetime
+from pathlib import Path
+
 from aiogram import types, F, Router
 from aiogram.types import FSInputFile
 from docx import Document
@@ -12,8 +14,7 @@ from model.assistant import catch_messages, clear_file
 from model.excel import write_data, generate_table, check_table
 from model. google_drive import *
 
-folder_id = '1J2magEKLM476PjfiqLV6Cc_b4iyLNPhT'
-folder = ''
+
 router = Router()
 
 # Настройка логирования
@@ -156,29 +157,21 @@ async def send_reminder(message: types.Message, chat_id: int):
         matching_files = sorted(glob.glob(fallback_pattern), reverse=True)
         file_name = matching_files[0] if matching_files else None
         new_file_name = file_name[11:]
-        # print(new_file_name)
+
         # Отправка сводного отчёта в гугл диск
-        load_excel(file_path=new_file_name, folder_id=folder_id)
+        # load_excel(file_path=new_file_name)
 
         document = FSInputFile(file_name)
-        try:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-                print(f"Файл {file_name} успешно удален.")
-                return True
-            else:
-                print(f"Файл {file_name} не существует.")
-                return False
-        except Exception as e:
-            print(f"Ошибка при удалении файла: {e}")
-            return False
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
         await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
+        # Удаление файла эксель
+        Path(file_name).unlink()
+
         logging.info(f'Количество необработанных сообщений (флуд): {number_errors}')
 
     except Exception as e:
         logging.error(f"Ошибка при отправке таблицы пользователю {chat_id}: {e}")
-        # await message.answer("Ошибка при отправке сгенерированного отчёта")
+        await message.answer("Ошибка при отправке сгенерированного отчёта")
 
 async def handle_message(message: types.Message, date: float):
     """
@@ -190,7 +183,6 @@ async def handle_message(message: types.Message, date: float):
     """
     try:
         global number_docx
-        global folder
 
         # Получаем информацию о пользователе и сообщении
         user_name = message.from_user.full_name
@@ -215,10 +207,7 @@ async def handle_message(message: types.Message, date: float):
         number_docx += 1
 
         # Отправка файла в гугл таблицу
-        if get_folder_id('message', parent_id=folder_id) == None:
-            folder = create_folder(folder_name='message', folder_id=folder_id)
-
-        load_word(filename, folder_id=folder)
+        # load_word(filename)
 
         logging.info(f"Сообщение от {user_name} сохранено в {filepath}")
 
@@ -246,7 +235,7 @@ async def handle_message(message: types.Message, date: float):
 
     except Exception as e:
         logging.error(f"Ошибка при обработке сообщения: {e}")
-        # await message.reply(f"Произошла ошибка при генерации отчёта")
+        await message.reply(f"Произошла ошибка при генерации отчёта")
 
 
 async def process_message(message: types.Message):
@@ -280,15 +269,15 @@ async def process_message(message: types.Message):
                 user_data[chat_id]['reminder_sent'] = False
 
 
-            await asyncio.sleep(120)  # Ждем 2 минуты
-            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
+            await asyncio.sleep(20)  # Ждем 2 минуты
+            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 20 and
                     not user_data[chat_id]['reminder_sent']):
                 await send_reminder(message, chat_id)
     except Exception as e:
         logging.error(
             f"Ошибка при обработке сообщения от пользователя {message.from_user.id} в чате {message.chat.id}: {e}",
             exc_info=True)
-        # await  message.answer("Ошибка обработки сообщения")
+        # await message.answer("Ошибка обработки сообщения")
 
 @router.message(F.text)
 async def any_message_handler(message: types.Message):
