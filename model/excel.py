@@ -178,7 +178,10 @@ def check_table(table_name='model/data/table1.xlsx'):
         while not empty(curr_sheet, r):
             # Проверяем подразделение
             if curr_sheet.cell(row=r, column=2).value not in subdivision:
-                curr_sheet.cell(row=r, column=2).fill = PatternFill(patternType='solid',
+                if curr_sheet.cell(row=r, column=2).value == 'Рассвет':
+                    curr_sheet.cell(row=r, column=2).value = 'АОР'
+                else:
+                    curr_sheet.cell(row=r, column=2).fill = PatternFill(patternType='solid',
                                                                     start_color='00FFFF00')  # Желтый
 
             # Проверяем операцию
