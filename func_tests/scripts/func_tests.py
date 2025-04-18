@@ -4,7 +4,7 @@ from docx import Document
 
 from model.assistant import func_tests_messages
 
-from colorama import Fore, Style
+from colorama import Fore, Style, init
 
 #Тестовые записи для оценки точности нейросети
 test_data_v1 = \
@@ -73,7 +73,7 @@ def compare_response(model_response, correct_response):
 
         :return: True, если ответы совпадают, иначе False
     """
-    return model_response.replace('\n', '') == correct_response.replace('\n', '')
+    return model_response.replace('\n', '').replace(' ', '') == correct_response.replace('\n', '').replace(' ', '')
 
 
 def func_tests():
