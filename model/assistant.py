@@ -12,7 +12,7 @@ sdk = YCloudML(
 
 # Инициализация модели LLAMA Lite и настройка генерации
 # model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
-model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrchclud309ekp64tbb"))
+model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrfnki8u19r1oaftnbr"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
@@ -203,7 +203,7 @@ def catch_messages(text, date):
         response = assistant.run(thread).wait()
         if not response.text:
             raise RuntimeError("Пустой ответ от модели")
-        print(response.text)
+        #logging.info(response.text)
         process_data(response.text, date)
 
     except Exception as e:

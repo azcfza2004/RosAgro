@@ -3,6 +3,7 @@ import os
 import glob
 import logging
 import time
+import re
 from datetime import datetime
 from aiogram import types, F, Router
 from aiogram.types import FSInputFile
@@ -20,6 +21,122 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 user_data = {}
 
 number_docx = 1
+
+number_errors = 0
+
+def is_agronom_report(text):
+    """
+        Определяет - является ли сообщение отчетом агронома
+
+        Args:
+            :param text - сообщение агронома
+
+        Returns:
+            bool: обозначение является ли сообщение отчетом агронома
+        """
+
+    # Нормализация текста
+    text = text.lower()
+    text = re.sub(r'[.,\-—)(]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    # Словари всех вариантов написания
+    operations = {
+        'диск', 'дисков', 'дискование', 'пахот', 'пахота', 'вспашк', 'чизел',
+        'чизелевание', 'прикат', 'прокатывание', 'выравн', 'выравнивание',
+        'культ', 'культивация', 'боронован', 'боронование', 'сев', 'посев',
+        'уборк', 'уборка', 'внесен', 'внесение', 'подкорм', 'подкормка',
+        'сзр', 'гербицид', 'герб', 'обработк', 'затравк', 'затравка',
+        'подготовк', 'мин удобр', 'внес мин удобр', 'подкормка', 'химпрополка',
+        'довсходовое', 'предпосевн', 'предп', 'предпосевная', 'прокат'
+    }
+
+    cultures = {
+        # Пшеница
+        'пш', 'пшениц', 'оз пш', 'оз. пш', 'озим пш', 'озим. пш', 'оз пшениц',
+        # Ячмень
+        'ячм', 'ячмен', 'оз ячм', 'оз. ячм', 'озим ячм', 'оз ячмень',
+        # Свекла
+        'сах св', 'сах. св', 'свекл', 'сах свекл', 'сахарн св', 'сахар. св', 'сах.св', 'сах/св',
+        # Кукуруза
+        'кук', 'кукуруз', 'кук зерн', 'кук. зерн', 'кук силос', 'кук. силос', 'кук/сил', 'кук/зерн',
+        # Рапс
+        'рапс', 'оз рапс', 'оз. рапс',
+        # Подсолнечник
+        'подсол', 'подсолнечн', 'подс', 'подсолн',
+        # Соя
+        'соя', 'соев', 'соевые', 'сою',
+        # Травы
+        'мн тр', 'многол тр', 'многолет тр', 'трав', 'кормовые',
+        # Овёс
+        'овс', 'овса', 'оз овс',
+        # Горох
+        'горох',
+        # Силос
+        'сил', 'силос'
+    }
+
+    structural = {
+        'пу', 'по пу', 'по.пу', 'попу', 'отд', 'отделение', 'отд.', 'бригада',
+        'день', 'ночь', 'га', 'оз', 'г', 'план', 'остаток', 'от начала', 'закончили'
+    }
+
+    locations = {
+        'юг', 'аор', 'тск', 'сп коломейцево', 'ао кропоткинское', 'мир',
+        'рассвет', 'восход', 'воронежская', 'ростовская', 'краснодарская'
+    }
+
+    # Проверка 1: Наличие сельхозоперации (минимум 1)
+    has_operation = any(op in text for op in operations)
+
+    # Проверка 2: Наличие культуры (минимум 1)
+    has_culture = any(cult in text for cult in cultures)
+
+    # Проверка 3: Формат площадей (X/Y, X-Y, X Y)
+    has_areas = re.search(r'\b\d+\s*[\/\- ]\s*\d+\b', text)
+
+    # Проверка 4: Структурные элементы (ПУ/Отд и др.)
+    has_structure = any(struct in text for struct in structural) or \
+                    re.search(r'(пу|отд)\s*\d+', text)
+
+    # Проверка 5: Дата в начале (DD.MM, DD.MM.YY)
+    has_date = re.search(r'^\d{1,2}\s*\.\s*\d{1,2}(\s*\.\s*\d{2,4})?\b', text)
+
+    # Проверка 6: Проценты выполнения
+    has_percent = re.search(r'\d+\s*%|\(\d+%\)', text)
+
+    # Проверка 7: Единицы измерения (га, кг, т, л)
+    has_units = re.search(r'\b\d+\s*(га|кг|т|л)\b', text)
+
+    # Проверка 8: Локации/подразделения
+    has_location = any(loc in text for loc in locations)
+
+    # Проверка 9: Урожайность/вал
+    has_yield = re.search(r'(урож|урожайность|вал)\s*\d+', text)
+
+    # Комбинированные критерии
+    main_criteria = sum([
+        has_operation,
+        has_culture,
+        bool(has_areas),
+        bool(has_structure),
+        bool(has_location)
+    ])
+
+    secondary_criteria = sum([
+        bool(has_date),
+        bool(has_percent),
+        bool(has_units),
+        bool(has_yield)
+    ])
+
+    # Сообщение считается отчетом если:
+    # 1. Есть ≥3 основных критерия ИЛИ
+    # 2. Дата + ≥1 основной критерий ИЛИ
+    # 3. ≥2 основных + ≥2 второстепенных критерия
+    return (main_criteria >= 3) or \
+        (has_date and main_criteria >= 1) or \
+        (main_criteria >= 2 and secondary_criteria >= 2)
 
 async def send_reminder(message: types.Message, chat_id: int):
     """
@@ -59,11 +176,17 @@ async def handle_message(message: types.Message, date: float):
     """
     try:
         global number_docx
+        global number_errors
 
         # Получаем информацию о пользователе и сообщении
         user_name = message.from_user.full_name
         text = message.text
 
+        if not is_agronom_report(text):
+            number_errors += 1
+            return
+
+        logging.info(f'Количество необработанных сообщений (флуд): {number_errors}')
         # Формируем имя файла (имяпользователя_номерсообщения_времядата.docx)
         timestamp_str = datetime.fromtimestamp(date).strftime("%M%H%d%m%Y")
         filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
@@ -75,10 +198,7 @@ async def handle_message(message: types.Message, date: float):
         #
         # # Теперь можно получить нормальную дату в любом формате
         correct_date = parsed_date.strftime("%Y-%m-%d %H:%M")
-        print(correct_date)
-        #print(normal_date_str).2023 15:30"
-        #формирование кореектной даты
-        #correct_date = timestamp_str[8:13] + "-" + timestamp_str[6:8] + "-" + timestamp_str[4:6] + " " + timestamp_str[2:4] + "_" + timestamp_str[0:2] + "_00"
+        #print(correct_date)
 
         # Создаем новый документ .docx
         doc = Document()
@@ -93,7 +213,7 @@ async def handle_message(message: types.Message, date: float):
         #Очищаем файл для записи очередной порции данных
         clear_file('model/processed_data/data.jsonl')
 
-        correct_date = correct_date.replace("_", ":")
+        #correct_date = correct_date.replace("_", ":")
         #Вызов обработки полученного сообщения
         catch_messages(text, correct_date)
 
