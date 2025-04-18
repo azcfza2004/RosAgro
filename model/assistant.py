@@ -11,8 +11,7 @@ sdk = YCloudML(
 )
 
 # Инициализация модели LLAMA Lite и настройка генерации
-# model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
-model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrfnki8u19r1oaftnbr"))
+model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamr92e80cud8v3g03atg"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
