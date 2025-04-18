@@ -18,6 +18,47 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('drive', 'v3', credentials=credentials)
 
 
+def get_folder_id(folder_name, parent_id=None):
+    """
+    Проверяет наличие папки в Google Drive и возвращает её ID.
+
+    Args:
+        folder_name (str): Название папки для поиска
+        parent_id (str, optional): ID родительской папки. Если None, ищет в корне Drive.
+
+    Returns:
+        str|None: ID папки если найдена, иначе None
+    """
+    try:
+        # Формируем запрос для поиска папки
+        query = [
+            "mimeType='application/vnd.google-apps.folder'",
+            f"name='{folder_name}'",
+            "trashed=false"
+        ]
+
+        if parent_id:
+            query.append(f"'{parent_id}' in parents")
+
+        # Выполняем запрос
+        results = service.files().list(
+            q=" and ".join(query),
+            fields="files(id, name)",
+            pageSize=10  # Ограничиваем количество результатов
+        ).execute()
+
+        folders = results.get('files', [])
+
+        if folders:
+            # Возвращаем ID первой найденной папки
+            return folders[0]['id']
+
+        return None
+
+    except Exception as e:
+        print(f"Ошибка при поиске папки '{folder_name}': {e}")
+        return None
+
 def create_folder(folder_name, parent_folder_id=FOLDER_ID):
     """
     Создание папки в гугл диске
