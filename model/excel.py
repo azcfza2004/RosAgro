@@ -82,8 +82,8 @@ def write_data(file_name='model/processed_data/data.jsonl', table_name='model/da
         Записывает данные из JSONL-файла в таблицу Excel.
 
         Args:
-            :param file_name: Название JSONL-файла по умолачанию является тем, которое задается в assistant.py
-            :param table_name: Название таблицы по умолачанию является тем, которое задано в ТЗ
+            :param file_name: Название JSONL-файла по умолчанию является тем, которое задается в assistant.py
+            :param table_name: Название таблицы по умолчанию является тем, которое задано в ТЗ
     """
     try:
         with open(file_name, 'r', encoding='utf-8') as file:
@@ -133,7 +133,7 @@ def read_inf(curr_sheet, d):
         Читает данные из справочного листа и добавляет их в список d.
 
         Args:
-            :param sheet_name: Название листа
+            :param curr_sheet: Название листа
             :param d: Словарь, куда сохраняются данные
     """
     try:

@@ -10,6 +10,7 @@ from aiogram.types import FSInputFile
 from docx import Document
 from model.assistant import catch_messages, clear_file
 from model.excel import write_data, generate_table, check_table
+from model. google_drive import *
 
 
 router = Router()
@@ -19,9 +20,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Словарь для хранения времени с последнего сообщения и флага отправки сообщения
 user_data = {}
-
+# Порядковый номер документа
 number_docx = 1
-
+# Количество сообщений не связанных с заполнением сводной таблицы
 number_errors = 0
 
 def is_agronom_report(text):
@@ -154,6 +155,9 @@ async def send_reminder(message: types.Message, chat_id: int):
         matching_files = sorted(glob.glob(fallback_pattern), reverse=True)
         file_name = matching_files[0] if matching_files else None
 
+        # Отправка сводного отчёта в гугл диск
+        load_excel(file_name)
+
         document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
         await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
@@ -196,6 +200,9 @@ async def handle_message(message: types.Message, date: float):
         doc.save(filepath)
         number_docx += 1
 
+        # Отправка файла в гугл таблицу
+        load_word(filename)
+
         logging.info(f"Сообщение от {user_name} сохранено в {filepath}")
 
         logging.info(f"Возвращенный текст: {text}")
@@ -206,7 +213,7 @@ async def handle_message(message: types.Message, date: float):
         #Вызов обработки полученного сообщения
         catch_messages(text, correct_date)
 
-        # Формируем имя файла (ЧасДеньМесяцГод_НазваниеКоманды.xlsx) ???
+        # Формируем имя файла (ЧасДеньМесяцГод_НазваниеКоманды.xlsx)
         timestamp_str = datetime.fromtimestamp(date).strftime("%H%d%m%Y")
         filename = f"{timestamp_str}_Лонг-айленд.xlsx"
 
@@ -219,7 +226,6 @@ async def handle_message(message: types.Message, date: float):
 
         #Проверка возможных ошибок в таблице
         check_table(f'model/data/{filename}')
-
 
     except Exception as e:
         logging.error(f"Ошибка при обработке сообщения: {e}")
@@ -236,8 +242,7 @@ async def process_message(message: types.Message):
         global user_data
         global number_errors
 
-
-
+        # Проверка на флуд
         if not is_agronom_report(message.text):
             number_errors += 1
             return
@@ -258,8 +263,8 @@ async def process_message(message: types.Message):
                 user_data[chat_id]['reminder_sent'] = False
 
 
-            await asyncio.sleep(120)  # Ждем 2 минуты
-            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
+            await asyncio.sleep(20)  # Ждем 2 минуты
+            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 20 and
                     not user_data[chat_id]['reminder_sent']):
                 await send_reminder(message, chat_id)
     except Exception as e:

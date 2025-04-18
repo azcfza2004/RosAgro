@@ -94,10 +94,8 @@ def func_tests():
 
         text = read_docx(pos_case_in_name)
         model_response = func_tests_messages(text)
-        #print(model_response + "REP")
 
         correct_response = read_docx(pos_case_out_name)
-        #print(correct_response)
         if compare_response(model_response, correct_response):
             print("pos_case_" + str(i) + ": " + Fore.GREEN + "SUCCESS" + Style.RESET_ALL)
         else:
