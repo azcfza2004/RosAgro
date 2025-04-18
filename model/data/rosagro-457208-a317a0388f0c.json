@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "rosagro-457208",
+  "private_key_id": "a317a0388f0cbb3dca41713a727eef8785160627",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDAv+1bemmUvhBp\nTAnFXFv1NxTDKory8JlyHqT5qqSXMGGk7wpSr6hPwP6jfmPG+rdBTJuyYXOrqv/d\n5JJf66RJjZEw8ttO+sVjragtLF/u4TABGGJuDYSCYdkNqcjzI822YsjSgT8TGxni\njfX1w/UFsg2BdyGxAGrvx2VhswGqfQIfuMy4uTC56mlyFnD3BhpieZF9P8j3SB6b\nO67NWnX9e3VZ3lyGKkrwqQTawWStCQ/hO4UT6ChD6vN2bycNIeCwUMqpkLFcGFB2\n7BdK26TGw5VacKcJwJfSZRoPvP+EgyEF+l9cTQqT341uBYCqyS+tCpmCvEKZywvY\nk4LpgpcHAgMBAAECggEAUt1wXsaWw4KerZYqETYutpJSk8EjcWQso9o21Lse/Xyo\nTe8Sgg/QjVEMaB97J907kZAs05h/0Qq3655Lq38z5wc8p02RKTg4Si0rQxhzudAI\nAkCIeIXJNQB5/xzCLn1y//kiGxXDlyQskbC0UE9JdIRiuAkOa/khACq6FDGQAsnx\nUdMorBt9hshLT58sL3CUCuJroubHr4kzuJeqRw5Hnq02hkf1waeBuSo+xtVyq0fA\nL61eB/iqwk5EGHTCU2q0EVPoU4Q/4kzhAxWwm/Pwp/LBjPbV8Jg1hqRd31jpFuz7\nnTlc3LQFGzWp5YO0eCRusZ516KRZ7TCRNUNJc/6zEQKBgQD3pdDdBEvm6qlsJbLx\nTRxZbQ5W/Zmekln23HR4oXXpalL6244zLnNW9pVv78lgvQGe1M5qEVq6DDjYuKu0\namx00NmVafc9uj95Xqd8bML4+mlJ3AjJkw4tH5560KqNxkWZMuDU/MgC0RdheGlg\nHZB5KMOXFd3WkdL0ZYGvJt3PzwKBgQDHQB+TLc5k+8lMPSpEbRMujPYRaJNlxNNg\nU3fa5TUJVgdQAKFWCl8kTwNrChh8AzJlc2lo/hyzvpGw2HymsCWOp3NEjfrOJteM\nEkrEoWDWEVJCHpbw3hqpALw9uBdkalRw021U2wcUuX+AGESL80uauNIacqnToCWu\nj7tP7ZCbSQKBgFP6lulcG6Ei0nEqF5RcYdCxertlJELxvjBIcfa2ShXtSFZpPb99\ncP98fxCGb/OuJG6IG7c8S1fr7RsRBKkZrc2vRRm15XG5Ru0RfBplh3iG8k1poFE6\n3QPQRR3AxRVutwtMhZG0Zt8NqLAU9Sby35s2h50kfSXWLYNTKLcMpwthAoGAW/Aa\noa7hLXeAyszuU+SAlVo1sJKwcKUBY9Ef3MEmV8h6V0/zIeBnRjmvOhTOd2qCNo2q\ndefLFqU4VIGQAtoEem6JoXhh4f3KN7e5CEHujNgxPJEg1MOnSZQtR81J/euSSv1D\n1YO7ILT3QAPynSEGIb5mNA30jtG2kXWA2MClmQECgYAiOLwCg7zIdZhbAf7tmFkX\nSD+qUvQT5E3So9tXEKSlAvhD5aLWyiO+97esb68DM+cDLJEDO6FSK5nrKOVE4s7m\nFD47KikVTw1MHpu4me7ge3y/kRhk6W29ywK/sfNiAe8524ZMhtmo6Dxpuf46SCko\nOCU1bmgGDbJYzVmWRqrdag==\n-----END PRIVATE KEY-----\n",
+  "client_email": "aferist@rosagro-457208.iam.gserviceaccount.com",
+  "client_id": "107170825630520689398",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/aferist%40rosagro-457208.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
