@@ -51,7 +51,7 @@ def load_excel(file_path, folder_id=FOLDER_ID):
         'name': file_path,
         'parents': [folder_id]
     }
-    media = MediaFileUpload(file_path, mimetype='mimetype=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    media = MediaFileUpload('model/data/' + file_path, mimetype='mimetype=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     file = service.files().create(
         body=file_metadata,
         media_body=media,

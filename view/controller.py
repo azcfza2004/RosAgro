@@ -154,9 +154,10 @@ async def send_reminder(message: types.Message, chat_id: int):
         fallback_pattern = f"model/data/*_Лонг-айленд.xlsx"
         matching_files = sorted(glob.glob(fallback_pattern), reverse=True)
         file_name = matching_files[0] if matching_files else None
-
+        new_file_name = file_name[11:]
+        print(new_file_name)
         # Отправка сводного отчёта в гугл диск
-        load_excel(file_name)
+        load_excel(file_path=new_file_name)
 
         document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
