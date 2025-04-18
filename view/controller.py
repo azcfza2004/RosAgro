@@ -24,6 +24,8 @@ user_data = {}
 number_docx = 1
 # Количество сообщений не связанных с заполнением сводной таблицы
 number_errors = 0
+folder_id = '1J2magEKLM476PjfiqLV6Cc_b4iyLNPhT'
+folder = ''
 
 def is_agronom_report(text):
     """
@@ -157,7 +159,7 @@ async def send_reminder(message: types.Message, chat_id: int):
         new_file_name = file_name[11:]
         print(new_file_name)
         # Отправка сводного отчёта в гугл диск
-        load_excel(file_path=new_file_name)
+        load_excel(file_path=new_file_name, folder_id=folder_id)
 
         document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
@@ -178,6 +180,7 @@ async def handle_message(message: types.Message, date: float):
     """
     try:
         global number_docx
+        global folder
 
         # Получаем информацию о пользователе и сообщении
         user_name = message.from_user.full_name
@@ -202,7 +205,10 @@ async def handle_message(message: types.Message, date: float):
         number_docx += 1
 
         # Отправка файла в гугл таблицу
-        load_word(filename)
+
+        if not(check_folder_exists('message', folder_id)):
+            folder = create_folder('message', folder_id)
+        load_word(filename, folder)
 
         logging.info(f"Сообщение от {user_name} сохранено в {filepath}")
 
@@ -264,8 +270,8 @@ async def process_message(message: types.Message):
                 user_data[chat_id]['reminder_sent'] = False
 
 
-            await asyncio.sleep(20)  # Ждем 2 минуты
-            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 20 and
+            await asyncio.sleep(120)  # Ждем 2 минуты
+            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
                     not user_data[chat_id]['reminder_sent']):
                 await send_reminder(message, chat_id)
     except Exception as e:
@@ -277,4 +283,3 @@ async def process_message(message: types.Message):
 @router.message(F.text)
 async def any_message_handler(message: types.Message):
     await process_message(message)
-

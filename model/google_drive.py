@@ -18,6 +18,26 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('drive', 'v3', credentials=credentials)
 
 
+def check_folder_exists(folder_name, parent_id=FOLDER_ID):
+    """
+        Проверяет, существует ли папка в Google Drive.
+        :param folder_name: Название папки
+        :param parent_folder_id: ID корневой папки
+    """
+    query = f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}' and trashed=false"
+
+    if parent_id:
+        query += f" and '{parent_id}' in parents"
+
+    results = service.files().list(
+        q=query,
+        fields="files(id, name)"
+    ).execute()
+
+    folders = results.get('files', [])
+    return bool(folders)
+
+
 def create_folder(folder_name, parent_folder_id=FOLDER_ID):
     """
     Создание папки в гугл диске

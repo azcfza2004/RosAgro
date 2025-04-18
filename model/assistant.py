@@ -11,8 +11,8 @@ sdk = YCloudML(
 )
 
 # Инициализация модели LLAMA Lite и настройка генерации
-# model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrshipv191qfa0c9qe8"))
 model = (sdk.models.completions("gpt://b1g6rjppcrrhq56lsqr0/llama-lite/latest@tamrfnki8u19r1oaftnbr"))
+# model = (sdk.models.completions("yandexgpt"))
 model = model.configure(temperature=0.1, max_tokens=3000)
 
 def create_thread():
@@ -201,6 +201,7 @@ def catch_messages(text, date):
         thread.write(text)
 
         response = assistant.run(thread).wait()
+        print(response.text)
         if not response.text:
             raise RuntimeError("Пустой ответ от модели")
         #logging.info(response.text)
