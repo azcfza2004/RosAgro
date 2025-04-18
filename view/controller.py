@@ -140,7 +140,7 @@ def is_agronom_report(text):
 
 async def send_reminder(message: types.Message, chat_id: int):
     """
-    Отправляет напоминание пользователю.
+    Отправляет отчёт пользователям в чат.
 
     Args:
         :param chat_id: ID определённого чата
@@ -156,19 +156,16 @@ async def send_reminder(message: types.Message, chat_id: int):
 
         document = FSInputFile(file_name)
         user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
-        # await asyncio.wait_for(
-        #     message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт"),
-        #     timeout=30.0  # 30 секунд на отправку
-        # )
         await message.bot.send_document(chat_id=chat_id, document = document, caption="Сгенерированный отчёт")
-        # user_data[chat_id]['reminder_sent'] = True  # Устанавливаем флаг, что напоминание отправлено
+        logging.info(f'Количество необработанных сообщений (флуд): {number_errors}')
+
     except Exception as e:
         logging.error(f"Ошибка при отправке таблицы пользователю {chat_id}: {e}")
         await message.answer("Ошибка при отправке сгенерированного отчёта")
 
 async def handle_message(message: types.Message, date: float):
     """
-    Сохраняет текст сообщения от пользователя в файл .docx.
+    Обрабатывает сообщение и составляет
 
     Args:
         :param date: Дата этого сообщения
@@ -176,17 +173,12 @@ async def handle_message(message: types.Message, date: float):
     """
     try:
         global number_docx
-        global number_errors
 
         # Получаем информацию о пользователе и сообщении
         user_name = message.from_user.full_name
         text = message.text
 
-        if not is_agronom_report(text):
-            number_errors += 1
-            return
 
-        logging.info(f'Количество необработанных сообщений (флуд): {number_errors}')
         # Формируем имя файла (имяпользователя_номерсообщения_времядата.docx)
         timestamp_str = datetime.fromtimestamp(date).strftime("%M%H%d%m%Y")
         filename = f"{user_name}_{number_docx}_{timestamp_str}.docx"
@@ -195,10 +187,8 @@ async def handle_message(message: types.Message, date: float):
 
         # Разбираем строку обратно в datetime
         parsed_date = datetime.strptime(timestamp_str, "%M%H%d%m%Y")
-        #
-        # # Теперь можно получить нормальную дату в любом формате
+        # Теперь можно получить нормальную дату в любом формате
         correct_date = parsed_date.strftime("%Y-%m-%d %H:%M")
-        #print(correct_date)
 
         # Создаем новый документ .docx
         doc = Document()
@@ -213,7 +203,6 @@ async def handle_message(message: types.Message, date: float):
         #Очищаем файл для записи очередной порции данных
         clear_file('model/processed_data/data.jsonl')
 
-        #correct_date = correct_date.replace("_", ":")
         #Вызов обработки полученного сообщения
         catch_messages(text, correct_date)
 
@@ -224,8 +213,10 @@ async def handle_message(message: types.Message, date: float):
         #В случае если таблицы для записи нет - создать ее
         if not os.path.isfile(f'model/data/{filename}'):
             generate_table(f'model/data/{filename}')
+
         #Дозапись данных в таблицу
         write_data(table_name=f'model/data/{filename}')
+
         #Проверка возможных ошибок в таблице
         check_table(f'model/data/{filename}')
 
@@ -243,27 +234,34 @@ async def process_message(message: types.Message):
     """
     try:
         global user_data
+        global number_errors
 
-        chat_id = message.chat.id
-        date = time.time()
 
-        await handle_message(message, date)
 
-        # Добавляем ID чата в словарь, если чат новый
-        if chat_id not in user_data:
-            user_data[chat_id] = {
-                'last_message_time': date,
-                'reminder_sent': False
-            }
+        if not is_agronom_report(message.text):
+            number_errors += 1
+            return
         else:
-            user_data[chat_id]['last_message_time'] = date
-            user_data[chat_id]['reminder_sent'] = False
+            chat_id = message.chat.id
+            date = time.time()
+
+            await handle_message(message, date)
+
+            # Добавляем ID чата в словарь, если чат новый
+            if chat_id not in user_data:
+                user_data[chat_id] = {
+                    'last_message_time': date,
+                    'reminder_sent': False
+                }
+            else:
+                user_data[chat_id]['last_message_time'] = date
+                user_data[chat_id]['reminder_sent'] = False
 
 
-        await asyncio.sleep(120)  # Ждем 2 минуты
-        if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
-                not user_data[chat_id]['reminder_sent']):
-            await send_reminder(message, chat_id)
+            await asyncio.sleep(120)  # Ждем 2 минуты
+            if (time.time() - int(user_data[chat_id]['last_message_time']) >= 120 and
+                    not user_data[chat_id]['reminder_sent']):
+                await send_reminder(message, chat_id)
     except Exception as e:
         logging.error(
             f"Ошибка при обработке сообщения от пользователя {message.from_user.id} в чате {message.chat.id}: {e}",
