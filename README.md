@@ -22,7 +22,7 @@
 ```bash
 
 # Клонировать репозиторий
-git clone https://github.com/yourusername/projectname.git
+git clone https://github.com/azcfza2004/RosAgro.git
 
 # Перейти в директорию проекта
 cd projectname
